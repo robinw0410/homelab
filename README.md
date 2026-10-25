@@ -1,9 +1,20 @@
 # Homelab
 
-Configuration and documentation of my self-hosted services on a single Proxmox VE node.
+Self-hosted infrastructure running on a single Proxmox VE node and two Raspberry Pis in a 3D-printed 10-inch rack.
 
 > All secrets, tokens and internal addresses have been removed. Internal IPs appear as `192.168.x.x`,
 > secrets as `${VARIABLES}`. See the `.env.example` file in each folder for what is required.
+
+## Hardware
+
+| Device | Specs | Role |
+|---|---|---|
+| HP Mini PC | Intel i5 (6th gen), 16 GB RAM, 2 TB SSD | Proxmox VE host |
+| Raspberry Pi 3B | Docker | Uptime Kuma, Tailscale backup subnet router |
+| Raspberry Pi 2B | – | Secondary Pi-hole + Unbound |
+| External USB HDD | 8 TB, ext4, mounted at `/mnt/media` | Media storage and backup target |
+| TP-Link switch | – | Rack networking |
+| Rack | Lab Rax 10" 5U, 3D-printed | Housing |
 
 ## Architecture
 
@@ -21,14 +32,27 @@ flowchart LR
         immich[Immich LXC]
         vw[Vaultwarden LXC]
         jf[Jellyfin LXC]
-        ph[Pi-hole LXC]
+        ph1[Pi-hole primary]
         ts6[TeamSpeak LXC]
         bb[Bambuddy LXC]
         mkt[Market data LXC]
         tika[tika LXC]
     end
 
-    pve -- vzdump 03:00 --> hdd[(HDD /mnt/media)]
+    subgraph pi2[Raspberry Pi 2B]
+        ph2[Pi-hole secondary] --> unbound[Unbound<br/>recursive DNS + DNSSEC]
+    end
+
+    subgraph pi3[Raspberry Pi 3B]
+        kuma[Uptime Kuma]
+        tsr[Tailscale subnet router]
+    end
+
+    clients[LAN clients] --> ph1 & ph2
+    tailnet((Tailscale)) -.-> vw
+    tailnet -. backup route .-> tsr
+    mkt -. push heartbeat .-> kuma
+    pve -- vzdump 03:00 --> hdd[(8 TB USB HDD<br/>/mnt/media)]
     immich -. restic 04:00 .-> hdd
     jf -- /data --> hdd
 ```
@@ -41,13 +65,16 @@ Detailed notes: [`docs/architecture.md`](docs/architecture.md)
 |---|---|---|---|
 | nginx + cloudflared | LXC | Website | [`services/website/`](services/website/) |
 | Immich | LXC + Docker | Photo library | [`services/immich/`](services/immich/) |
-| Vaultwarden | LXC + Docker | Password manager, TLS certificate via Tailscale | [`services/vaultwarden/`](services/vaultwarden/) (cert renewal only) |
+| Vaultwarden | LXC + Docker | Password manager, reachable via Tailscale with a `tailscale cert` TLS certificate | [`services/vaultwarden/`](services/vaultwarden/) |
 | TeamSpeak 6 | LXC + Docker | Voice server with Cloudflare DDNS | [`services/teamspeak/`](services/teamspeak/) |
 | Bambuddy | LXC + Docker | Bambu Lab 3D printer management | [`services/bambuddy/`](services/bambuddy/) |
 | Open WebUI | LXC + Docker | LLM chat UI against an OpenAI-compatible API, own Cloudflare Tunnel | [`services/open-webui/`](services/open-webui/) |
 | Market data collector | LXC + systemd | Collects Binance klines, backtest scripts | [`services/marketdata/`](services/marketdata/) |
 | Jellyfin | LXC | Media server, `/dev/dri/renderD128` passed through | [`proxmox/lxc/101.conf`](proxmox/lxc/101.conf) |
-| Pi-hole | LXC | DNS filtering | [`proxmox/lxc/100.conf`](proxmox/lxc/100.conf) |
+| Pi-hole primary | LXC | DNS filtering | [`proxmox/lxc/100.conf`](proxmox/lxc/100.conf) |
+| Pi-hole secondary + Unbound | Raspberry Pi 2B | Redundant DNS filtering, recursive DNS with DNSSEC | – |
+| Uptime Kuma | Docker on Pi 3B | Service monitoring | – |
+| Tailscale subnet router | Raspberry Pi 3B | Backup route into the LAN | – |
 | tika | LXC | no service config exported | [`proxmox/lxc/113.conf`](proxmox/lxc/113.conf) |
 | Home Assistant | VM (HAOS) | Home automation | [`proxmox/qemu/109.conf`](proxmox/qemu/109.conf) |
 
@@ -55,12 +82,13 @@ Proxmox host configs (network, storage, backup job, all guest configs): [`proxmo
 
 ## Backups
 
-| What | How | When | Retention |
+| Time | What | How | Retention |
 |---|---|---|---|
-| All guests | `vzdump`, snapshot mode, zstd, to `/mnt/media/pve-backup` | daily 03:00 ([`proxmox/jobs.cfg`](proxmox/jobs.cfg)) | 7 daily, 4 weekly, 3 monthly |
-| Immich library (files, no database dump) | `restic` on the Proxmox host to `/mnt/media/backup/immich` | daily 04:00, `Persistent=true` ([`scripts/backup/systemd/`](scripts/backup/systemd/)) | 7 daily, 4 weekly, 6 monthly |
+| 02:00 | Immich database | Immich's built-in DB dump into `/mnt/pve/storage/immich-data/backups` | 14 dumps |
+| 03:00 (done ~03:20) | All guests | `vzdump`, snapshot mode, zstd, to `/mnt/media/pve-backup` ([`proxmox/jobs.cfg`](proxmox/jobs.cfg)) | 7 daily, 4 weekly, 3 monthly |
+| 04:00 | Immich library incl. database dumps | `restic` on the Proxmox host to `/mnt/media/backup/immich` ([`scripts/backup/`](scripts/backup/)) | 7 daily, 4 weekly, 6 monthly |
 
-Both backups go to the same disk mounted at `/mnt/media`. Script: [`scripts/backup/backup-immich.sh`](scripts/backup/backup-immich.sh)
+The jobs run one after another without overlapping. vzdump and restic both write to the 8 TB USB HDD.
 
 ## Maintenance
 

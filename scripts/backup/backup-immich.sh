@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 # Restic backup of the Immich library. Runs on the Proxmox host as /usr/local/bin/backup-immich.sh,
-# started by systemd/backup-immich.timer. Backs up files only, no database dump.
+# started by systemd/backup-immich.timer (04:00). IMMICH_DATA is the Immich upload folder, which
+# also holds the DB dumps Immich writes daily at 02:00 (<upload>/backups), so they are included.
 set -euo pipefail
 
 # Optional overrides, see .env.example
