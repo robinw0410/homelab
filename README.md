@@ -70,6 +70,7 @@ Detailed notes: [`docs/architecture.md`](docs/architecture.md)
 | Bambuddy | LXC + Docker | Bambu Lab 3D printer management | [`services/bambuddy/`](services/bambuddy/) |
 | Open WebUI | LXC + Docker | LLM chat UI against an OpenAI-compatible API, own Cloudflare Tunnel | [`services/open-webui/`](services/open-webui/) |
 | Market data collector | LXC + systemd | Collects Binance klines, backtest scripts | [`services/marketdata/`](services/marketdata/) |
+| Listing search | LXC | Automated search for used motorcycles and broken electronics to repair | [`listing-search/`](listing-search/) |
 | Jellyfin | LXC | Media server, `/dev/dri/renderD128` passed through | [`proxmox/lxc/101.conf`](proxmox/lxc/101.conf) |
 | Pi-hole primary | LXC | DNS filtering | [`proxmox/lxc/100.conf`](proxmox/lxc/100.conf) |
 | Pi-hole secondary + Unbound | Raspberry Pi 2B | Redundant DNS filtering, recursive DNS with DNSSEC | – |
@@ -101,6 +102,7 @@ The jobs run one after another without overlapping. vzdump and restic both write
 ├── docs/                 architecture notes, writeup drafts
 ├── hardware/rack-sensor/ (empty)
 ├── home-assistant/       (empty)
+├── listing-search/       short description (code is in a private repository)
 ├── proxmox/              host network/storage/backup config, LXC + VM configs
 ├── scripts/backup/       restic backup of Immich + systemd units
 └── services/             compose files, systemd units and configs per service

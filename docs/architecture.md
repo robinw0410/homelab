@@ -34,7 +34,7 @@ All guests except Home Assistant are unprivileged LXCs with `nesting=1`.
 | 113 | tika | LXC (Ubuntu) | 2 / 2 GB | no service config exported |
 | 114 | openwebgui | LXC (Debian) | 2 / 2 GB | |
 | 116 | crypto | LXC (Debian) | 2 / 4 GB | |
-| 119 | listing-search | LXC (Debian) | 2 / 2 GB | `onboot` not set |
+| 119 | listing-search | LXC (Debian) | 2 / 2 GB | Listing search, see [`listing-search/`](../listing-search/); `onboot` not set |
 
 Every guest NIC has the Proxmox firewall flag set (`firewall=1`).
 
