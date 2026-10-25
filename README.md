@@ -95,13 +95,34 @@ The jobs run one after another without overlapping. vzdump and restic both write
 
 `lxc-update-all` runs on the host every Sunday at 05:00 ([`proxmox/crontab.txt`](proxmox/crontab.txt)).
 
+## Home Assistant dashboard
+
+Lovelace dashboard in the sections layout with two views. Config: [`home-assistant/dashboard.yaml`](home-assistant/dashboard.yaml)
+
+| View | Sections |
+|---|---|
+| **Zuhause** (home) | Status chips (room and rack temperature, weather) · Klima: living room and bedroom with 24 h temperature and humidity charts · Steckdosen: two Sonoff smart plugs (3D printer, server) with power, current, voltage and a 12 h power chart · Staubsauger: robot vacuum controls, status and map |
+| **Server** | Rack: fan, temperature/humidity, fan RPM, 24 h chart · DNS: both Pi-holes with block rate, clients, filter switches, blocked queries and client distribution · Verfügbarkeit: all Uptime Kuma monitors · Proxmox node: status, uptime, CPU, RAM, 24 h chart, restart/shutdown buttons · Container & VMs: status of all guests · Speicher: usage of `storage`, `local-lvm`, `local` with a 30-day chart |
+
+HACS frontend cards:
+
+- [Mushroom](https://github.com/piitaya/lovelace-mushroom): chips, template, entity, fan and vacuum cards
+- [ApexCharts Card](https://github.com/RomRider/apexcharts-card): all history charts
+- [auto-entities](https://github.com/thomasloven/lovelace-auto-entities): Uptime Kuma monitors (`integration: uptime_kuma`) and Proxmox guests (`integration: proxmoxve`) are listed automatically
+
+Entity IDs are from my instance; the Sonoff device IDs are replaced with `sonoff_DEVICE_ID_1` / `_2`.
+
+| Zuhause | Server |
+|---|---|
+| ![Home view](docs/images/ha-home.png) | ![Server view](docs/images/ha-server.png) |
+
 ## Repo structure
 
 ```
 .
-├── docs/                 architecture notes, writeup drafts
+├── docs/                 architecture notes, writeup drafts, screenshots
 ├── hardware/rack-sensor/ (empty)
-├── home-assistant/       (empty)
+├── home-assistant/       Lovelace dashboard YAML
 ├── listing-search/       short description (code is in a private repository)
 ├── proxmox/              host network/storage/backup config, LXC + VM configs
 ├── scripts/backup/       restic backup of Immich + systemd units

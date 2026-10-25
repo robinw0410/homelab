@@ -1,0 +1,571 @@
+views:
+  - title: Zuhause
+    path: home
+    icon: mdi:home
+    type: sections
+    max_columns: 3
+    sections:
+      - type: grid
+        cards:
+          - type: custom:mushroom-chips-card
+            alignment: center
+            chips:
+              - type: entity
+                entity: sensor.sensor_wohnzimmer_temperatur_wohnzimmer
+                icon: mdi:sofa
+                icon_color: orange
+              - type: entity
+                entity: sensor.sensor_schlafzimmer_temperatur_schlafzimmer
+                icon: mdi:bed
+                icon_color: indigo
+              - type: entity
+                entity: sensor.rack_fan_controller_rack_temperatur
+                icon: mdi:server
+                icon_color: red
+              - type: weather
+                entity: weather.forecast_home
+                show_conditions: true
+                show_temperature: true
+      - type: grid
+        cards:
+          - type: heading
+            heading: Klima
+            heading_style: title
+            icon: mdi:thermometer
+          - type: custom:mushroom-template-card
+            primary: Wohnzimmer
+            secondary: >-
+              {{ states('sensor.sensor_wohnzimmer_temperatur_wohnzimmer') |
+              round(1) }} °C · {{
+              states('sensor.sensor_wohnzimmer_luftfeuchtigkeit_wohnzimmer') |
+              round(0) }} %
+            icon: mdi:sofa-outline
+            icon_color: >-
+              {% set t =
+              states('sensor.sensor_wohnzimmer_temperatur_wohnzimmer') |
+              float(0) %} {% if t > 25 %}red{% elif t > 21 %}orange{% elif t >
+              18 %}green{% else %}blue{% endif %}
+            entity: sensor.sensor_wohnzimmer_temperatur_wohnzimmer
+          - type: custom:mushroom-template-card
+            primary: Schlafzimmer
+            secondary: >-
+              {{ states('sensor.sensor_schlafzimmer_temperatur_schlafzimmer') |
+              round(1) }} °C · {{
+              states('sensor.sensor_schlafzimmer_luftfeuchtigkeit_schlafzimmer')
+              | round(0) }} %
+            icon: mdi:bed-outline
+            icon_color: >-
+              {% set t =
+              states('sensor.sensor_schlafzimmer_temperatur_schlafzimmer') |
+              float(0) %} {% if t > 25 %}red{% elif t > 21 %}orange{% elif t >
+              18 %}green{% else %}blue{% endif %}
+            entity: sensor.sensor_schlafzimmer_temperatur_schlafzimmer
+          - type: custom:apexcharts-card
+            header:
+              show: true
+              title: Temperaturverlauf 24 h
+              show_states: true
+              colorize_states: true
+            graph_span: 24h
+            span:
+              end: minute
+            apex_config:
+              chart:
+                height: 200
+              stroke:
+                width: 2
+              legend:
+                show: true
+            series:
+              - entity: sensor.sensor_wohnzimmer_temperatur_wohnzimmer
+                name: Wohnzimmer
+                stroke_width: 2
+                curve: smooth
+                group_by:
+                  func: avg
+                  duration: 15min
+              - entity: sensor.sensor_schlafzimmer_temperatur_schlafzimmer
+                name: Schlafzimmer
+                stroke_width: 2
+                curve: smooth
+                group_by:
+                  func: avg
+                  duration: 15min
+          - type: custom:apexcharts-card
+            header:
+              show: true
+              title: Luftfeuchtigkeit 24 h
+              show_states: true
+              colorize_states: true
+            graph_span: 24h
+            span:
+              end: minute
+            apex_config:
+              chart:
+                height: 200
+              yaxis:
+                min: 0
+                max: 100
+            series:
+              - entity: sensor.sensor_wohnzimmer_luftfeuchtigkeit_wohnzimmer
+                name: Wohnzimmer
+                curve: smooth
+                group_by:
+                  func: avg
+                  duration: 15min
+              - entity: sensor.sensor_schlafzimmer_luftfeuchtigkeit_schlafzimmer
+                name: Schlafzimmer
+                curve: smooth
+                group_by:
+                  func: avg
+                  duration: 15min
+      - type: grid
+        cards:
+          - type: heading
+            heading: Steckdosen
+            heading_style: title
+            icon: mdi:power-socket-de
+          - type: custom:mushroom-entity-card
+            entity: switch.sonoff_DEVICE_ID_1_1
+            name: 3D Drucker
+            icon: mdi:power-socket-de
+            icon_color: amber
+            secondary_info: none
+            tap_action:
+              action: toggle
+          - type: custom:mushroom-template-card
+            primary: Verbrauch Steckdose 1
+            secondary: >-
+              {{ states('sensor.sonoff_DEVICE_ID_1_power') }} W · {{
+              states('sensor.sonoff_DEVICE_ID_1_current') }} A · {{
+              states('sensor.sonoff_DEVICE_ID_1_voltage') }} V
+            icon: mdi:flash
+            icon_color: >-
+              {% if states('sensor.sonoff_DEVICE_ID_1_power') | float(0) > 100
+              %}red{% else %}green{% endif %}
+            entity: sensor.sonoff_DEVICE_ID_1_power
+          - type: custom:mushroom-entity-card
+            entity: switch.sonoff_DEVICE_ID_2_1
+            icon: mdi:power-socket-de
+            icon_color: amber
+            secondary_info: none
+            tap_action:
+              action: toggle
+            name: Server
+          - type: custom:mushroom-template-card
+            primary: Verbrauch Steckdose 2
+            secondary: >-
+              {{ states('sensor.sonoff_DEVICE_ID_2_power') }} W · {{
+              states('sensor.sonoff_DEVICE_ID_2_current') }} A · {{
+              states('sensor.sonoff_DEVICE_ID_2_voltage') }} V
+            icon: mdi:flash
+            icon_color: >-
+              {% if states('sensor.sonoff_DEVICE_ID_2_power') | float(0) > 100
+              %}red{% else %}green{% endif %}
+            entity: sensor.sonoff_DEVICE_ID_2_power
+          - type: custom:apexcharts-card
+            header:
+              show: true
+              title: Leistungsaufnahme 12 h
+              show_states: true
+            graph_span: 12h
+            apex_config:
+              chart:
+                height: 180
+            series:
+              - entity: sensor.sonoff_DEVICE_ID_1_power
+                name: Steckdose 1
+                curve: stepline
+                group_by:
+                  func: avg
+                  duration: 10min
+              - entity: sensor.sonoff_DEVICE_ID_2_power
+                name: Steckdose 2
+                curve: stepline
+                group_by:
+                  func: avg
+                  duration: 10min
+      - type: grid
+        cards:
+          - type: heading
+            heading: Staubsauger
+            heading_style: title
+            icon: mdi:robot-vacuum
+          - type: custom:mushroom-vacuum-card
+            entity: vacuum.l10s_ultra_gen_2
+            name: L10s Ultra
+            icon_animation: true
+            commands:
+              - start_pause
+              - stop
+              - return_home
+              - locate
+          - type: custom:mushroom-template-card
+            primary: '{{ states(''sensor.l10s_ultra_gen_2_status'') }}'
+            secondary: 'Aufgabe: {{ states(''sensor.l10s_ultra_gen_2_task_status'') }}'
+            icon: mdi:information-outline
+            icon_color: blue
+            entity: sensor.l10s_ultra_gen_2_status
+          - type: picture-entity
+            entity: camera.l10s_ultra_gen_2_map
+            show_state: false
+            show_name: false
+            camera_view: auto
+  - title: Server
+    path: server
+    icon: mdi:server-network
+    type: sections
+    max_columns: 3
+    sections:
+      - type: grid
+        cards:
+          - type: heading
+            heading: Rack
+            heading_style: title
+            icon: mdi:fan
+          - type: custom:mushroom-fan-card
+            entity: fan.rack_fan_controller_rack_lufter
+            name: Rack-Lüfter
+            icon_animation: true
+            show_percentage_control: true
+          - type: custom:mushroom-template-card
+            primary: Rack-Klima
+            secondary: >-
+              {{ states('sensor.rack_fan_controller_rack_temperatur') | round(1)
+              }} °C · {{
+              states('sensor.rack_fan_controller_rack_luftfeuchtigkeit') |
+              round(0) }} %
+            icon: mdi:thermometer-lines
+            icon_color: >-
+              {% set t = states('sensor.rack_fan_controller_rack_temperatur') |
+              float(0) %} {% if t > 40 %}red{% elif t > 32 %}orange{% else
+              %}green{% endif %}
+            entity: sensor.rack_fan_controller_rack_temperatur
+          - type: custom:mushroom-template-card
+            primary: Lüfterdrehzahl
+            secondary: >-
+              {{ states('sensor.rack_fan_controller_lufter_rpm_pulse_min') }}
+              RPM
+            icon: mdi:fan-speed-3
+            icon_color: >-
+              {% if states('sensor.rack_fan_controller_lufter_rpm_pulse_min') |
+              float(0) < 100 %}grey{% else %}cyan{% endif %}
+            entity: sensor.rack_fan_controller_lufter_rpm_pulse_min
+          - type: custom:apexcharts-card
+            header:
+              show: true
+              title: Racktemperatur & Drehzahl 24 h
+              show_states: true
+              colorize_states: true
+            graph_span: 24h
+            apex_config:
+              chart:
+                height: 220
+              yaxis:
+                - seriesName: Temperatur
+                  decimalsInFloat: 1
+                - seriesName: RPM
+                  opposite: true
+                  decimalsInFloat: 2
+            series:
+              - entity: sensor.rack_fan_controller_rack_temperatur
+                name: Temperatur
+                curve: smooth
+                group_by:
+                  func: avg
+                  duration: 10min
+              - entity: sensor.rack_fan_controller_lufter_rpm_pulse_min
+                name: RPM
+                curve: stepline
+                yaxis_id: RPM
+                group_by:
+                  func: avg
+                  duration: 10min
+      - type: grid
+        cards:
+          - type: heading
+            heading: DNS
+            heading_style: title
+            icon: mdi:dns
+          - type: custom:mushroom-template-card
+            primary: Pi-hole Primär (Proxmox)
+            secondary: >-
+              {{ states('sensor.pi_hole_ads_percentage_blocked') | round(1) }} %
+              geblockt · {{ states('sensor.pi_hole_dns_unique_clients') }}
+              Clients
+            icon: mdi:pi-hole
+            icon_color: >-
+              {% if is_state('binary_sensor.pi_hole_status','on') %}green{% else
+              %}red{% endif %}
+            entity: binary_sensor.pi_hole_status
+          - type: custom:mushroom-template-card
+            primary: Pi-hole Sekundär (Pi 2B)
+            secondary: >-
+              {{ states('sensor.pi_hole_ads_percentage_blocked_2') | round(1) }}
+              % geblockt · {{ states('sensor.pi_hole_dns_unique_clients_2') }}
+              Clients
+            icon: mdi:pi-hole
+            icon_color: >-
+              {% if is_state('binary_sensor.pi_hole_status_2','on') %}green{%
+              else %}red{% endif %}
+            entity: binary_sensor.pi_hole_status_2
+          - type: entities
+            title: Filterung
+            entities:
+              - entity: switch.pi_hole
+                name: Primär
+              - entity: switch.pi_hole_2
+                name: Sekundär
+          - type: custom:apexcharts-card
+            header:
+              show: true
+              title: Geblockte Anfragen 24 h
+              show_states: true
+              colorize_states: true
+            graph_span: 24h
+            apex_config:
+              chart:
+                height: 200
+            series:
+              - entity: sensor.pi_hole_ads_blocked
+                name: Primär
+                curve: smooth
+                group_by:
+                  func: max
+                  duration: 30min
+              - entity: sensor.pi_hole_ads_blocked_2
+                name: Sekundär
+                curve: smooth
+                group_by:
+                  func: max
+                  duration: 30min
+          - type: custom:apexcharts-card
+            header:
+              show: true
+              title: Lastverteilung – Clients 24 h
+              show_states: true
+              colorize_states: true
+            graph_span: 24h
+            apex_config:
+              chart:
+                height: 180
+            series:
+              - entity: sensor.pi_hole_dns_unique_clients
+                name: Primär
+                curve: stepline
+                group_by:
+                  func: avg
+                  duration: 30min
+              - entity: sensor.pi_hole_dns_unique_clients_2
+                name: Sekundär
+                curve: stepline
+                group_by:
+                  func: avg
+                  duration: 30min
+          - type: custom:mushroom-template-card
+            primary: >-
+              {% set p = states('sensor.pi_hole_ads_blocked') | float(0) %} {%
+              set s = states('sensor.pi_hole_ads_blocked_2') | float(0) %} {% if
+              p + s > 0 %}
+                Verteilung {{ (p / (p + s) * 100) | round(0) }} / {{ (s / (p + s) * 100) | round(0) }}
+              {% else %}Keine Daten{% endif %}
+            secondary: Primär / Sekundär
+            icon: mdi:scale-balance
+            icon_color: purple
+      - type: grid
+        cards:
+          - type: heading
+            heading: Verfügbarkeit
+            heading_style: title
+            icon: mdi:heart-pulse
+          - type: custom:auto-entities
+            card:
+              type: entities
+              title: Dienste
+              state_color: true
+            filter:
+              include:
+                - entity_id: sensor.*_status
+                  integration: uptime_kuma
+                  options:
+                    secondary_info: last-changed
+              exclude:
+                - state: unavailable
+                - state: unknown
+            sort:
+              method: state
+              reverse: true
+            show_empty: false
+      - type: grid
+        cards:
+          - type: heading
+            heading: Proxmox Node
+            heading_style: title
+            icon: mdi:server
+          - type: custom:mushroom-template-card
+            primary: pve
+            secondary: >-
+              {{ states('sensor.office_pve_status') | capitalize }} · Uptime {{
+              (states('sensor.office_pve_uptime') | float(0) / 24) | round(1) }}
+              d
+            icon: mdi:server
+            icon_color: >-
+              {% if is_state('sensor.office_pve_status','online') %}green{% else
+              %}red{% endif %}
+            entity: sensor.office_pve_status
+          - type: custom:mushroom-template-card
+            primary: CPU
+            secondary: >-
+              {{ states('sensor.office_pve_cpu_usage') | float(0) | round(1) }}
+              %
+            icon: mdi:cpu-64-bit
+            icon_color: >-
+              {% set v = states('sensor.office_pve_cpu_usage') | float(0) %} {%
+              if v > 80 %}red{% elif v > 50 %}orange{% else %}green{% endif %}
+            entity: sensor.office_pve_cpu_usage
+          - type: custom:mushroom-template-card
+            primary: Arbeitsspeicher
+            secondary: >-
+              {{ states('sensor.office_pve_memory_usage_percentage') | float(0)
+              | round(1) }} % von {{
+              states('sensor.office_pve_max_memory_usage') | float(0) | round(1)
+              }} GiB
+            icon: mdi:memory
+            icon_color: >-
+              {% set v = states('sensor.office_pve_memory_usage_percentage') |
+              float(0) %} {% if v > 85 %}red{% elif v > 70 %}orange{% else
+              %}green{% endif %}
+            entity: sensor.office_pve_memory_usage_percentage
+          - type: custom:apexcharts-card
+            header:
+              show: true
+              title: Node-Auslastung 24 h
+              show_states: true
+              colorize_states: true
+            graph_span: 24h
+            apex_config:
+              chart:
+                height: 200
+              yaxis:
+                min: 0
+                max: 100
+            series:
+              - entity: sensor.office_pve_cpu_usage
+                name: CPU
+                curve: smooth
+                group_by:
+                  func: avg
+                  duration: 15min
+              - entity: sensor.office_pve_memory_usage_percentage
+                name: RAM
+                curve: smooth
+                group_by:
+                  func: avg
+                  duration: 15min
+          - type: entities
+            title: Node-Steuerung
+            entities:
+              - entity: button.office_pve_restart
+                name: Neustart
+              - entity: button.office_pve_shut_down
+                name: Herunterfahren
+      - type: grid
+        cards:
+          - type: heading
+            heading: Container & VMs
+            heading_style: title
+            icon: mdi:cube-outline
+          - type: custom:auto-entities
+            card:
+              type: entities
+              title: Status
+              state_color: true
+            filter:
+              include:
+                - entity_id: binary_sensor.*_status
+                  integration: proxmoxve
+              exclude:
+                - entity_id: binary_sensor.office_pve_status
+                - state: unavailable
+            sort:
+              method: state
+            show_empty: false
+      - type: grid
+        cards:
+          - type: heading
+            heading: Speicher
+            heading_style: title
+            icon: mdi:harddisk
+          - type: custom:mushroom-template-card
+            primary: Medien & Immich (storage)
+            secondary: >-
+              {{ states('sensor.storage_storage_used_storage') | float(0) |
+              round(0) }} / {{ states('sensor.storage_storage_total_storage') |
+              float(0) | round(0) }} GiB · {{
+              states('sensor.storage_storage_storage_usage_percentage') }} %
+            icon: mdi:database
+            icon_color: >-
+              {% set v =
+              states('sensor.storage_storage_storage_usage_percentage') |
+              float(0) %} {% if v > 90 %}red{% elif v > 75 %}orange{% else
+              %}green{% endif %}
+            entity: sensor.storage_storage_storage_usage_percentage
+          - type: custom:mushroom-template-card
+            primary: LXC-Disks (local-lvm)
+            secondary: >-
+              {{ states('sensor.storage_local_lvm_used_storage') | float(0) |
+              round(0) }} / {{ states('sensor.storage_local_lvm_total_storage')
+              | float(0) | round(0) }} GiB · {{
+              states('sensor.storage_local_lvm_storage_usage_percentage') }} %
+            icon: mdi:harddisk
+            icon_color: >-
+              {% set v =
+              states('sensor.storage_local_lvm_storage_usage_percentage') |
+              float(0) %} {% if v > 90 %}red{% elif v > 75 %}orange{% else
+              %}green{% endif %}
+            entity: sensor.storage_local_lvm_storage_usage_percentage
+          - type: custom:mushroom-template-card
+            primary: System (local)
+            secondary: >-
+              {{ states('sensor.storage_local_used_storage') | float(0) |
+              round(0) }} / {{ states('sensor.storage_local_total_storage') |
+              float(0) | round(0) }} GiB · {{
+              states('sensor.storage_local_storage_usage_percentage') }} %
+            icon: mdi:folder-cog
+            icon_color: >-
+              {% set v = states('sensor.storage_local_storage_usage_percentage')
+              | float(0) %} {% if v > 90 %}red{% elif v > 75 %}orange{% else
+              %}green{% endif %}
+            entity: sensor.storage_local_storage_usage_percentage
+          - type: custom:apexcharts-card
+            header:
+              show: true
+              title: Speicherbelegung 30 Tage
+              show_states: true
+              colorize_states: true
+            graph_span: 30d
+            apex_config:
+              chart:
+                height: 200
+              yaxis:
+                min: 0
+                max: 100
+            series:
+              - entity: sensor.storage_storage_storage_usage_percentage
+                name: storage
+                curve: smooth
+                group_by:
+                  func: avg
+                  duration: 6h
+              - entity: sensor.storage_local_lvm_storage_usage_percentage
+                name: local-lvm
+                curve: smooth
+                group_by:
+                  func: avg
+                  duration: 6h
+              - entity: sensor.storage_local_storage_usage_percentage
+                name: local
+                curve: smooth
+                group_by:
+                  func: avg
+                  duration: 6h
