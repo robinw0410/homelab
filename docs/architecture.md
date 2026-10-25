@@ -102,4 +102,5 @@ Nightly sequence, no overlaps:
 ## Monitoring
 
 - Uptime Kuma runs in Docker on the Raspberry Pi 3B.
+- Rack temperature and humidity come from the ESP32 [rack fan controller](../hardware/rack-fan/), which also switches the rack fan.
 - The market data collector sends heartbeats to an Uptime Kuma push URL (`KUMA_PUSH_URL`).

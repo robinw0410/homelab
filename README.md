@@ -116,12 +116,21 @@ Entity IDs are from my instance; the Sonoff device IDs are replaced with `sonoff
 |---|---|
 | ![Home view](docs/images/ha-home.png) | ![Server view](docs/images/ha-server.png) |
 
+## Hardware projects
+
+| Device | Hardware | Status | Folder |
+|---|---|---|---|
+| Rack fan controller | diymore ESP32, SHT31-D, Noctua NF-P12 redux-1700 PWM, ESPHome | Deployed: measures rack temperature/humidity, drives the fan along a curve with hysteresis and a failsafe | [`hardware/rack-fan/`](hardware/rack-fan/) |
+| Room sensor | diymore ESP32, SHT31-D in a 3D-printed case, ESPHome | Deployed in the living room | [`hardware/room-sensor/`](hardware/room-sensor/) |
+
 ## Repo structure
 
 ```
 .
 ├── docs/                 architecture notes, writeup drafts, screenshots
-├── hardware/rack-sensor/ (empty)
+├── hardware/
+│   ├── rack-fan/         ESPHome rack fan controller
+│   └── room-sensor/      ESPHome room sensor + enclosure STL
 ├── home-assistant/       Lovelace dashboard YAML
 ├── listing-search/       short description (code is in a private repository)
 ├── proxmox/              host network/storage/backup config, LXC + VM configs

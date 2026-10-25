@@ -1,0 +1,106 @@
+esphome:
+  name: rack-fan-controller
+  friendly_name: rack-fan-controller
+
+esp32:
+  variant: esp32
+  framework:
+    type: esp-idf
+
+logger:
+
+api:
+  encryption:
+    key: !secret api_encryption_key
+ota:
+  - platform: esphome
+
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_password
+
+  ap:
+    ssid: rack-fan-contro Fallback Hotspot
+    password: !secret fallback_ap_password
+captive_portal:
+
+# --- Ab hier neu hinzugefügt ---
+
+i2c:
+  sda: GPIO21
+  scl: GPIO22
+  scan: true
+
+sensor:
+  - platform: sht3xd
+    temperature:
+      name: "Rack Temperatur"
+      id: rack_temp
+    humidity:
+      name: "Rack Luftfeuchtigkeit"
+      id: rack_humidity
+    address: 0x44
+    update_interval: 15s
+
+  - platform: pulse_counter
+    pin:
+      number: GPIO26
+      mode:
+        input: true
+        pullup: true
+    name: "Lüfter RPM (Pulse/min)"
+    id: fan_pulses
+    unit_of_measurement: "pulses/min"
+    filters:
+      - multiply: 0.5
+    update_interval: 15s
+
+output:
+  - platform: ledc
+    pin: GPIO25
+    frequency: 25000Hz
+    id: fan_pwm_output
+
+fan:
+  - platform: speed
+    output: fan_pwm_output
+    name: "Rack Lüfter"
+    id: rack_fan
+
+globals:
+  - id: fan_state
+    type: bool
+    restore_value: no
+    initial_value: 'false'
+
+interval:
+  - interval: 15s
+    then:
+      - lambda: |-
+          float temp = id(rack_temp).state;
+          float TEMP_ON = 35.0;
+          float TEMP_OFF = 30.0;
+          float TEMP_MAX = 45.0;
+          float MIN_DUTY = 0.20;
+          float MAX_DUTY = 1.00;
+          if (isnan(temp)) {
+            id(rack_fan).turn_on().set_speed(50).perform();
+            return;
+          }
+          if (id(fan_state)) {
+            if (temp < TEMP_OFF) {
+              id(fan_state) = false;
+              id(rack_fan).turn_off().perform();
+            } else {
+              float ratio = (temp - TEMP_ON) / (TEMP_MAX - TEMP_ON);
+              if (ratio < 0) ratio = 0;
+              if (ratio > 1) ratio = 1;
+              float duty = MIN_DUTY + ratio * (MAX_DUTY - MIN_DUTY);
+              id(rack_fan).turn_on().set_speed((int)(duty * 100)).perform();
+            }
+          } else {
+            if (temp >= TEMP_ON) {
+              id(fan_state) = true;
+              id(rack_fan).turn_on().set_speed((int)(MIN_DUTY * 100)).perform();
+            }
+          }
