@@ -1,0 +1,26 @@
+services:
+  open-webui:
+    image: ghcr.io/open-webui/open-webui:main
+    container_name: open-webui
+    restart: always
+    ports:
+      - "8080:8080"
+    environment:
+      - OPENAI_API_BASE_URL=https://api.deepseek.com/v1
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - WEBUI_SECRET_KEY=${WEBUI_SECRET_KEY}
+    volumes:
+      - open-webui:/app/backend/data
+
+  cloudflare-tunnel:
+    image: cloudflare/cloudflared:latest
+    container_name: cloudflare-tunnel
+    restart: always
+    command: tunnel --no-autoupdate run --url http://open-webui:8080 ${CLOUDFLARE_TUNNEL_ID}
+    volumes:
+      - /etc/cloudflared:/home/nonroot/.cloudflared
+    depends_on:
+      - open-webui
+
+volumes:
+  open-webui:

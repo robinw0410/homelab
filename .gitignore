@@ -1,0 +1,28 @@
+# Secrets – never commit these
+.env
+*.env
+!*.env.example
+secrets/
+*.key
+*.pem
+*.crt
+*credentials*
+*token*
+cloudflared/*.json
+
+# Home Assistant
+home-assistant/secrets.yaml
+home-assistant/.storage/
+
+# Backups and data
+*.tar
+*.tar.zst
+*.vma*
+*.sql
+*.db
+*.sqlite
+
+# Misc
+.DS_Store
+__pycache__/
+node_modules/

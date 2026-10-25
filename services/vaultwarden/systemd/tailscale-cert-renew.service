@@ -1,0 +1,9 @@
+[Unit]
+Description=Renew Tailscale TLS certificate
+After=network-online.target tailscaled.service
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+EnvironmentFile=/etc/tailscale-cert-renew.env
+ExecStart=/usr/local/bin/tailscale-cert-renew.sh
