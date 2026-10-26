@@ -34,7 +34,7 @@ All guests except Home Assistant are unprivileged LXCs with `nesting=1`.
 | 113 | tika | LXC (Ubuntu) | 2 / 2 GB | no service config exported |
 | 114 | openwebgui | LXC (Debian) | 2 / 2 GB | |
 | 116 | crypto | LXC (Debian) | 2 / 4 GB | |
-| 119 | listing-search | LXC (Debian) | 2 / 2 GB | Listing search, see [`listing-search/`](../listing-search/); `onboot` not set |
+| 119 | listing-search | LXC (Debian) | 2 / 2 GB | Deal search ([deal-engine](https://github.com/robinw0410/deal-engine)), see [`services/deal-search/`](../services/deal-search/); `onboot` not set |
 
 Every guest NIC has the Proxmox firewall flag set (`firewall=1`).
 
@@ -45,7 +45,8 @@ Every guest NIC has the Proxmox firewall flag set (`firewall=1`).
 - **Vaultwarden:** Docker container `vaultwarden` in LXC 106 (originally started with `docker run`, recreated as
   [`docker-compose.yml`](../services/vaultwarden/docker-compose.yml)). Host port 443 → container port 80, data in
   `/vw-data`, Rocket serves TLS itself (`ROCKET_TLS`) with the Tailscale certificate, signups disabled.
-- **systemd:** cloudflared in the website LXC, market data collector.
+- **systemd:** cloudflared in the website LXC, market data collector (units in the
+  [marketdata-pipeline](https://github.com/robinw0410/marketdata-pipeline) repository).
 
 ## DNS
 
@@ -103,4 +104,5 @@ Nightly sequence, no overlaps:
 
 - Uptime Kuma runs in Docker on the Raspberry Pi 3B.
 - Rack temperature and humidity come from the ESP32 [rack fan controller](../hardware/rack-fan/), which also switches the rack fan.
-- The market data collector sends heartbeats to an Uptime Kuma push URL (`KUMA_PUSH_URL`).
+- The market data collector sends heartbeats to an Uptime Kuma push URL (`KUMA_PUSH_URL`, configured in the
+  [marketdata-pipeline](https://github.com/robinw0410/marketdata-pipeline) repository).

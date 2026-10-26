@@ -70,7 +70,7 @@ Detailed notes: [`docs/architecture.md`](docs/architecture.md)
 | Bambuddy | LXC + Docker | Bambu Lab 3D printer management | [`services/bambuddy/`](services/bambuddy/) |
 | Open WebUI | LXC + Docker | LLM chat UI against an OpenAI-compatible API, own Cloudflare Tunnel | [`services/open-webui/`](services/open-webui/) |
 | Market data pipeline | LXC + systemd | Collects Binance klines, backtesting framework; code in its own repository: [marketdata-pipeline](https://github.com/robinw0410/marketdata-pipeline) | [`services/marketdata/`](services/marketdata/) |
-| Listing search | LXC | Automated search for used motorcycles and broken electronics to repair | [`listing-search/`](listing-search/) |
+| Deal search | LXC | Runs [deal-engine](https://github.com/robinw0410/deal-engine), a self-hosted engine for second-hand deals | [`services/deal-search/`](services/deal-search/) |
 | Jellyfin | LXC | Media server, `/dev/dri/renderD128` passed through | [`proxmox/lxc/101.conf`](proxmox/lxc/101.conf) |
 | Pi-hole primary | LXC | DNS filtering | [`proxmox/lxc/100.conf`](proxmox/lxc/100.conf) |
 | Pi-hole secondary + Unbound | Raspberry Pi 2B | Redundant DNS filtering, recursive DNS with DNSSEC | – |
@@ -132,7 +132,6 @@ Entity IDs are from my instance; the Sonoff device IDs are replaced with `sonoff
 │   ├── rack-fan/         ESPHome rack fan controller
 │   └── room-sensor/      ESPHome room sensor + enclosure STL
 ├── home-assistant/       Lovelace dashboard YAML
-├── listing-search/       short description (code is in a private repository)
 ├── proxmox/              host network/storage/backup config, LXC + VM configs
 ├── scripts/backup/       restic backup of Immich + systemd units
 └── services/             compose files, systemd units and configs per service
